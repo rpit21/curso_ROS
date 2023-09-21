@@ -10,6 +10,8 @@ import numpy as np
 
 def callback(data:LaserScan):
 
+    velocidades=Twist()
+
     distancias=np.array([])
     angulos=np.array([])
 
@@ -25,7 +27,7 @@ def callback(data:LaserScan):
         rospy.loginfo("Angulo: %f, Rango: %f, Intensidad:%f", anguloActual, rangoActual, intensidad)
 
         # Escojo aquellos valores y angulos en un array que esten a una distancia cercana (Modificar para que se amplie su rango de seleccion)
-        if rangoActual<=7.0 and (anguloActual<=1.57 or anguloActual>=4.71):
+        if rangoActual<=7.0: #and (anguloActual<=1.57 or anguloActual>=4.71):
             distancias=np.append(distancias,rangoActual)
             angulos=np.append(angulos,anguloActual)
 
@@ -36,31 +38,35 @@ def callback(data:LaserScan):
 
     v_angular,v_lineal=calcular_velocidades(obstaculos)
 
+    #Publico los datos en el topico con un mensaje 
 
-    pub.publish(v_lineal)
+    velocidades.angular.z=v_angular
+    velocidades.linear.x=v_lineal
+
+    pub.publish(velocidades)
 
 
 def calcular_velocidades(obstaculos):
     if len(obstaculos)==0:
         V_angular=0
-        V_lineal=50
+        V_lineal=1
     else:
         #Calculo de la fuerza repulsiva basada en las coordenadas de los obstaculos
-        k_repulsivo=1
+        k_repulsivo=0.67
         force_repulsiva_x=0.0
         force_repulsiva_y=0.0
 
         for obstacle_x, obstacle_y in obstaculos:
-            gradient_x=-obstacle_x
-            gradient_y=-obstacle_y
-            force_repulsiva_x=k_repulsivo*gradient_x
-            force_repulsiva_y=2.3*gradient_y
+            gradient_x= 0-obstacle_x
+            gradient_y= 0-obstacle_y
+            force_repulsiva_x += k_repulsivo*gradient_x
+            force_repulsiva_y += k_repulsivo*gradient_y
         
         # Calculo de la velocidad angular 
         V_angular=force_repulsiva_y
 
         #calculo de la velocidad lineal
-        V_lineal=50+force_repulsiva_x
+        V_lineal=1-force_repulsiva_x
 
     return V_angular, V_lineal
 
@@ -101,7 +107,7 @@ if __name__ == '__main__':
         rospy.init_node('LectorLidar', anonymous=False)
 
         #funcion para publicar
-        pub = rospy.Publisher('Evasion', Float32, queue_size=10)
+        pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
 
         #funcion para susbcribirse
         rospy.Subscriber("scan", LaserScan, callback)

@@ -171,6 +171,7 @@ target_link_libraries(listenlidar ${catkin_LIBRARIES})
 catkin_install_python(PROGRAMS
   src/publisher.py 
   src/subscriber.py
+  src/lector_lidar.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 

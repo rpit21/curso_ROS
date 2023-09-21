@@ -1,0 +1,130 @@
+#!/usr/bin/env python3
+
+import rospy
+from sensor_msgs.msg import LaserScan 
+from geometry_msgs.msg import Twist
+from std_msgs.msg import Float32
+import numpy as np
+
+
+
+def callback(data:LaserScan):
+
+    velocidades=Twist() # genero una variable de mensaje Twist
+
+    #arreglos de numpy para 
+    distancias=np.array([])
+    angulos=np.array([])
+
+    rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.header)
+    lens= int((data.angle_max - data.angle_min) / data.angle_increment)
+
+    for i in range(0,lens):
+
+        anguloActual=(data.angle_min + i * data.angle_increment)#*180/3.14159
+        rangoActual=data.ranges[i]
+        intensidad=data.intensities[i]
+
+        rospy.loginfo("Angulo: %f, Rango: %f, Intensidad:%f", anguloActual, rangoActual, intensidad)
+
+        # Escojo aquellos valores y angulos en un array que esten a una distancia cercana (Modificar para que se amplie su rango de seleccion)
+        if rangoActual<=7.0: #and (anguloActual<=1.57 or anguloActual>=4.71):
+            distancias=np.append(distancias,rangoActual)
+            angulos=np.append(angulos,anguloActual)
+
+
+    #llamo a la funcion que modifica la velocidad lineal y angular a partir de las distancias y los angulos 
+
+    v_angular,v_lineal=calcular_velocidades(distancias, angulos)
+
+    #Publico los datos en el topico con un mensaje 
+
+    velocidades.angular.z=v_angular
+    velocidades.linear.x=v_lineal
+
+    pub.publish(velocidades)
+
+
+def calcular_velocidades(distancias, angulos):
+
+    puntos=[]
+
+    #convierto las distancias y angulos en coordenadas cartesianas
+    x=distancias*np.cos(angulos)
+    y=distancias*np.sin(angulos)
+
+    #guardo las coordenas x, y en el unas lista 
+    for i in range(len(x)):
+        puntos.append((x[i],y[i]))
+
+
+    if len(puntos)==0:
+        V_angular=0
+        V_lineal=1
+    else:
+        #Calculo de la fuerza repulsiva basada en las coordenadas de los obstaculos (Modificar el constante de repulsion)
+        k_repulsivo=0.012
+        force_repulsiva_x=0.0
+        force_repulsiva_y=0.0
+
+        for obstacle_x, obstacle_y in puntos:
+            gradient_x= 0-obstacle_x
+            gradient_y= 0-obstacle_y
+            force_repulsiva_x += k_repulsivo*gradient_x
+            force_repulsiva_y += k_repulsivo*gradient_y
+        
+        # Calculo de la velocidad angular 
+        V_angular=force_repulsiva_y
+
+        #calculo de la velocidad lineal
+        V_lineal=1-force_repulsiva_x
+
+    return V_angular, V_lineal
+
+def detec_obstacle(distancias, angulos):
+    #convierto las distancias y angulos en coordenadas cartesianas
+    x=distancias*np.cos(angulos)
+    y=distancias*np.sin(angulos)
+
+    #Aplico filtro para identificar puntos cercanos entre si (modificar para mayor filtro)
+    min_cluster_dis=0.5
+    clusters=[]
+    current_cluster=[]
+
+    for i in range(len(x)):
+        if i==0 or np.sqrt((x[i]-x[i-1])**2 +(y[i]-y[i-1])**2)<=min_cluster_dis:  #identifico la cercania de los puntos entre si y evaluo
+            current_cluster.append((x[i],y[i]))
+        else:
+            clusters.append(current_cluster)
+            current_cluster=[(x[i],y[i])]
+
+    
+    #identificar obstaculos basados en le tamanio del Cluster (la cantidad de puntos existentes) (Modificar para mayor filtro)
+    min_cluster_size=10
+    obstacles=[]
+
+    for cluster in clusters:
+        if len(cluster)>=min_cluster_size:
+            x_values, y_values= zip(*cluster)
+            x_obstacle=np.mean(x_values)
+            y_obstacle=np.mean(y_values)
+            obstacles.append((x_obstacle,y_obstacle))
+
+    return obstacles
+
+if __name__ == '__main__':
+    try:
+        #Inicializamos nuestro nodo
+        rospy.init_node('LectorLidar', anonymous=False)
+
+        #funcion para publicar
+        pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
+
+        #funcion para susbcribirse
+        rospy.Subscriber("scan", LaserScan, callback)
+
+        rospy.spin()
+
+    except rospy.ROSInterruptException:
+        pass
+

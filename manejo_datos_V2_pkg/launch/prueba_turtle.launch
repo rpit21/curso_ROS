@@ -1,0 +1,10 @@
+<launch>
+	
+	<include file="$(find ldlidar_stl_ros)/launch/viewer_ld19_noetic.launch"/>
+	
+	<node pkg="turtlesim" type="turtlesim_node" name="Tortuga">
+	</node>
+	
+	<node pkg="manejo_datos_pkg" type="lector_lidar.py" name="LecLidar"/>
+	
+</launch>
