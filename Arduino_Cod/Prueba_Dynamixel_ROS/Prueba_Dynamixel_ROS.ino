@@ -4,8 +4,8 @@
 
 #define DXL_SERIAL Serial1
 #define DXL_DIR_PIN  -1
-#define DXL_IDL 1
-#define DXL_IDR 2
+#define DXL_IDL 2
+#define DXL_IDR 1
 
 float VL;
 float VR;
@@ -17,22 +17,22 @@ using namespace ControlTableItem;
 ros::NodeHandle  nh;
 
 void dxl_cb(const geometry_msgs::Twist &msg){
-  float VL = (msg.linear.x*10.0 - msg.angular.z*50.0/1.8) / 2;
-  float VR = (msg.linear.x*10.0 + msg.angular.z*50.0/1.8) / 2;
-  if(VL > 50.0){
-    VL=50.0;
+  float VL = msg.linear.x*182.0 - msg.angular.z*28.0;
+  float VR = msg.linear.x*182.0 + msg.angular.z*28.0;
+  if(VL > 40.0){
+    VL=40.0;
   }
-  else if(VL < -50.0){
-    VL=-50.0;
+  else if(VL < -40.0){
+    VL=-40.0;
   }
-  if(VR > 50.0){
-    VR=50.0;
+  if(VR > 40.0){
+    VR=40.0;
   }
-  else if(VR < -50.0){
-    VR=-50.0;
+  else if(VR < -40.0){
+    VR=-40.0;
   }
   dxl.setGoalVelocity(DXL_IDL, VL, UNIT_RPM);
-  dxl.setGoalVelocity(DXL_IDR, VR, UNIT_RPM); 
+  dxl.setGoalVelocity(DXL_IDR, -VR, UNIT_RPM); 
 }
 
 ros::Subscriber<geometry_msgs::Twist> sub("/cmd_vel", &dxl_cb);
