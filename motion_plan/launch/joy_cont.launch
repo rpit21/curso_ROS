@@ -5,8 +5,11 @@
     <param name="port" value="/dev/ttyACM0"/>
     </node>
     
-    <!-- Nodo conexion teleop-->
-    <node pkg="turtlebot3_teleop" type="turtlebot3_teleop_key" name="teleop" output="screen"/>
+    <!-- Nodo conexion teleop por joy-->
+    <param name="joy_node/dev" value="/dev/input/js0"/>
+    <node name="jn" pkg="joy" type="joy_node"/> 
+    <node pkg="motion_plan" type="joy_sub_pub" name="teleop" output="screen"/>
+    <!-- <node pkg="turtlebot3_teleop" type="turtlebot3_teleop_key" name="teleop" output="screen"/> -->
     
     <!-- Launcher Lidar -->
     <include file="$(find ldlidar_stl_ros)/launch/ld19.launch" />

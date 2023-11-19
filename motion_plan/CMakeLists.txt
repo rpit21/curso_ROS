@@ -211,3 +211,8 @@ catkin_install_python(PROGRAMS
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+#joy_sub_pub
+add_executable(joy_sub_pub src/joy_sub_pub.cpp
+)
+target_link_libraries(joy_sub_pub ${catkin_LIBRARIES} -lwiringPi
+)
