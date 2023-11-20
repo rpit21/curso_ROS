@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+ <launch>
+     <!-- Nodo conexion rosserial arduino-->
+    <node pkg="rosserial_python" type="serial_node.py" name="ROSARDUINO">
+    <param name="port" value="/dev/ttyACM0"/>
+    </node>
+    
+    
+    <!-- Launcher Lidar -->
+    <include file="$(find ldlidar_stl_ros)/launch/ld19.launch" />
+    <node name="rviz_show_ldlidar" pkg="rviz" type="rviz" args="-d $(find ldlidar_stl_ros)/rviz/ldlidar_noetic.rviz" required="true"/>
+    
+    <!-- Nodo de evasion obstaculos 360-->
+    <node pkg="motion_plan" type="laser_obstacle_avoid_360_node_class.py" name="evasion" output="screen"/>
+   
+  </launch>

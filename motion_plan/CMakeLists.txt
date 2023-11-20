@@ -1,21 +1,21 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
+#cmake_minimum_required(VERSION 2.8.3)
 project(motion_plan)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
+
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
+  roscpp
   rospy
   sensor_msgs
+  geometry_msgs
   std_msgs
 )
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+
+find_library(wiringpi_libraries names wiringpi)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -103,22 +103,21 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+
+
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES motion_plan
-#  CATKIN_DEPENDS geometry_msgs rospy sensor_msgs std_msgs
-#  DEPENDS system_lib
+  CATKIN_DEPENDS roscpp rospy geometry_msgs sensor_msgs std_msgs
 )
 
 ###########
 ## Build ##
 ###########
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
+
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${WIRINGPI_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -168,6 +167,8 @@ include_directories(
 catkin_install_python(PROGRAMS
   src/obstacle_avoidance.py 
   src/reading_laser.py
+  src/Avoider.py
+  src/laser_obstacle_avoid_360_node_class.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
@@ -203,16 +204,6 @@ catkin_install_python(PROGRAMS
 ## Testing ##
 #############
 
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_motion_plan.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
-
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
 #joy_sub_pub
-add_executable(joy_sub_pub src/joy_sub_pub.cpp
-)
-target_link_libraries(joy_sub_pub ${catkin_LIBRARIES} -lwiringPi
-)
+add_executable(joy_sub_pub src/joy_sub_pub.cpp)
+target_link_libraries(joy_sub_pub ${catkin_LIBRARIES} -lwiringPi)
