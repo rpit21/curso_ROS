@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   geometry_msgs
   std_msgs
+  dynamixel_sdk
 )
 
 
@@ -106,7 +107,7 @@ find_library(wiringpi_libraries names wiringpi)
 
 
 catkin_package(
-  CATKIN_DEPENDS roscpp rospy geometry_msgs sensor_msgs std_msgs
+  CATKIN_DEPENDS roscpp rospy geometry_msgs sensor_msgs std_msgs dynamixel_sdk
 )
 
 ###########
@@ -167,8 +168,6 @@ include_directories(
 catkin_install_python(PROGRAMS
   src/obstacle_avoidance.py 
   src/reading_laser.py
-  src/Avoider.py
-  src/laser_obstacle_avoid_360_node_class.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
@@ -207,3 +206,7 @@ catkin_install_python(PROGRAMS
 #joy_sub_pub
 add_executable(joy_sub_pub src/joy_sub_pub.cpp)
 target_link_libraries(joy_sub_pub ${catkin_LIBRARIES} -lwiringPi)
+
+#U2D2
+add_executable(U2D2 src/U2D2.cpp)
+target_link_libraries(U2D2 ${catkin_LIBRARIES})

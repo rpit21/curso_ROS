@@ -18,8 +18,8 @@ def callback_laser(msg):
   
 def take_action(regions):
   threshold_dist = 1.1
-  linear_speed = 0.2
-  angular_speed = 1.6
+  linear_speed = 0.15
+  angular_speed = 0.6
 
   msg = Twist()
   linear_x = 0
