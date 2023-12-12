@@ -1,6 +1,3 @@
-#include <ros.h>
-#include <std_msgs/Byte.h>
-#include <geometry_msgs/Twist.h>
 #include <QTRSensors.h>
 
 #define Trigger1  10
@@ -20,7 +17,7 @@
 #define Rc5       6
 #define Rc6       7
 
-#define U_lim     30
+#define U_lim     20
 #define S_lim     100
 #define R1_lim    200 //120|160-204
 #define R2_lim    125 //80-120
@@ -39,18 +36,8 @@ float linear = 0;
 float angular = 0;
 uint16_t sensorValues[6];
 
-ros::NodeHandle  nh;
-
-std_msgs::Byte modo_msg;
-geometry_msgs::Twist cmd_vel_sensores;
-
-ros::Publisher modo_pub("/modo", &modo_msg);
-ros::Publisher cmd_vel_sensores_pub("/cmd_vel_sensores", &cmd_vel_sensores);
-
 void setup() {
-  //Serial.begin(115200);//iniciailzamos la comunicación
-  nh.getHardware()->setBaud(57600);
-  nh.initNode();
+  Serial.begin(9600);
   
   pinMode(Trigger1, OUTPUT);
   pinMode(Trigger2, OUTPUT);
@@ -64,8 +51,13 @@ void setup() {
   qtr.setSensorPins((const uint8_t[]){Rc1, Rc2, Rc3, Rc4, Rc5, Rc6}, 6);
   delay(500);
 
-  nh.advertise(modo_pub);
-  nh.advertise(cmd_vel_sensores_pub);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
+  for (uint16_t i = 0; i < 400; i++)
+  {
+    qtr.calibrate();
+  }
+  digitalWrite(LED_BUILTIN, LOW);
 }
 
 void loop() {
@@ -75,7 +67,29 @@ void loop() {
   uint16_t d1 = medirDistancia(Trigger1, Echo1);
   uint16_t d2 = medirDistancia(Trigger2, Echo2);
   uint16_t d3 = medirDistancia(Trigger3, Echo3);
-  qtr.read(sensorValues);
+  //qtr.read(sensorValues);
+  qtr.readLineWhite(sensorValues);
+  
+  //publicacion de datos por serial
+  Serial.print("Sharps:");
+  Serial.print(s1);
+  Serial.print(" ");
+  Serial.print(s2);
+  Serial.print(" Ultrasonidos:");
+  Serial.print(d1);
+  Serial.print(" ");
+  Serial.print(d2);
+  Serial.print(" ");
+  Serial.print(d3);
+  Serial.print(" Reflectivos:");
+  
+  for (uint8_t i = 0; i < 6; i++){
+    Serial.print(sensorValues[i]);
+    Serial.print(" ");
+  }
+  Serial.println(" ");
+  
+  
   //Comprobacion de limites para asignacion de modo
   if(modo >= 0){
     if(s1 <= S_lim){
@@ -128,7 +142,7 @@ void loop() {
       R[5] = 1;
     }
     if(R[0] || R[1] || R[2] || R[3] || R[4] || R[5]){
-      //modo = 1;                                     //Desactivado hasta calibrar bien
+      modo = 1;
     }
     else{
       modo = 0;
@@ -154,6 +168,13 @@ void loop() {
       linear = 0.5;
       angular = 0.0;
     }
+    /*
+    for (uint8_t i = 0; i < 6; i++){
+      Serial.print(R[i]);
+      Serial.print(" ");
+    }
+    Serial.println(" ");
+    */
     //reinicio de variables
     for (uint8_t i = 0; i < 6; i++){
       R[i] = 0;
@@ -180,26 +201,35 @@ void loop() {
   }
   else if(modo == 3){
     //accion de control
-    linear = -0.5;
-    angular = 0.0;
+    if(S[0] && S[1]){
+      linear = -0.5;
+      angular = 0.0;
+    }
+    else if(S[0]){
+      linear = -0.5;
+      angular = -0.5;
+    }
+    else if(S[1]){
+      linear = -0.5;
+      angular = 0.5;
+    }
     //reinicio de variables
     for (uint8_t i = 0; i < 2; i++){
       S[i] = 0;
     }
   }
-
-  //publicacion de modo de funcionamiento y accion de control
-  modo_msg.data = modo;
-  modo_pub.publish(&modo_msg);
+  /*
+  //Salida de modo y señal de control
+  Serial.print("Modo:");
+  Serial.print(modo);
+  Serial.print(" Linear:");
+  Serial.print(linear);
+  Serial.print(" Angular:");
+  Serial.println(angular);
+  */
   modo = 0;
-  nh.spinOnce();
-  
-  cmd_vel_sensores.linear.x = linear;
-  cmd_vel_sensores.angular.z = angular;
-  cmd_vel_sensores_pub.publish(&cmd_vel_sensores);
   linear = 0.0;
   angular = 0.0;
-  nh.spinOnce();
   
   //delay para evitar saturacion de mensajes
   delay(100);

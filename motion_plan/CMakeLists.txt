@@ -210,3 +210,13 @@ target_link_libraries(joy_sub_pub ${catkin_LIBRARIES} -lwiringPi)
 #U2D2
 add_executable(U2D2 src/U2D2.cpp)
 target_link_libraries(U2D2 ${catkin_LIBRARIES})
+
+#sensors_node
+add_executable(sensors_node src/sensors_node.cpp)
+target_link_libraries(sensors_node ${catkin_LIBRARIES} -lwiringPi
+)
+
+#test_fc
+add_executable(test_fc src/test_fc.cpp)
+target_link_libraries(test_fc ${catkin_LIBRARIES} -lwiringPi
+)

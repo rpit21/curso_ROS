@@ -102,7 +102,7 @@ int dynamixel_config(){
   }
   dxl_comm_result = packetHandler->write1ByteTxRx(portHandler, DXL_IDR, ADDR_OPERATING_MODE, 1, &dxl_error);
   if (dxl_comm_result != COMM_SUCCESS) {
-    ROS_ERROR("Failed to configure operating mode for Dynamixel ID %d", DXLR_ID);
+    ROS_ERROR("Failed to configure operating mode for Dynamixel ID %d", DXL_IDR);
     return -1;
   }
   dxl_comm_result = packetHandler->write1ByteTxRx(portHandler, DXL_IDR, ADDR_TORQUE_ENABLE, 1, &dxl_error);

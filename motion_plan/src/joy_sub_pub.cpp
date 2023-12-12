@@ -19,7 +19,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "joy_sub_pub");
   ros::NodeHandle  nh;
   ros::Subscriber sub = nh.subscribe("joy",10,joyCallback);
-  vel_pub =nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
+  vel_pub =nh.advertise<geometry_msgs::Twist>("/cmd_vel_control", 10);
 
   ros::spin();
 }

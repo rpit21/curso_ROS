@@ -16,7 +16,7 @@ def main():
     # Subscribe to the "/scan" topic in order to read laser scans data from it
     rospy.Subscriber("/scan", LaserScan, avoider.indentify_regions)
     #create our publisher that'll publish to the "/cmd_vel" topic
-    pub = rospy.Publisher("/cmd_vel", Twist, queue_size = 1)
+    pub = rospy.Publisher("/cmd_vel_control", Twist, queue_size = 1)
     #ros will try to run this code 10 times/second
     rate = rospy.Rate(10) #10Hz
     
