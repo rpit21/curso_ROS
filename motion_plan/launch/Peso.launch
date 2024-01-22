@@ -4,11 +4,6 @@
     <node pkg="motion_plan" type="U2D2" name="U2D2" output="screen">
     </node>
     
-    <!-- Nodo conexion rosserial arduino-->
-    <node pkg="rosserial_python" type="serial_node.py" name="ROSARDUINO">
-    <param name="port" value="/dev/ttyUSB0"/>
-    </node>
-    
     <!-- Nodo conexion teleop por joy-->
     <param name="joy_node/dev" value="/dev/input/js0"/>
     <node name="jn" pkg="joy" type="joy_node"/> 
@@ -16,10 +11,6 @@
     
     <!-- Nodo de toma de desicion de sensores-->
     <node pkg="motion_plan" type="sensors_node" name="sensors_node" output="screen"/>
-    
-    <!-- Launcher Lidar -->
-    <!--include file="$(find ldlidar_stl_ros)/launch/ld19.launch" /-->
-    <!--node name="rviz_show_ldlidar" pkg="rviz" type="rviz" args="-d $(find ldlidar_stl_ros)/rviz/ldlidar_noetic.rviz" required="true"/-->
     
     <!-- Nodo de salida de datos-->
     <node pkg="motion_plan" type="datos" name="Datos" output="screen"/>

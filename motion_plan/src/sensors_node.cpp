@@ -18,6 +18,7 @@
 
 ros::Publisher vel_pub;
 int modo;
+uint8_t cont = 0;
 bool FC[10];
 
 float linear_sensores;
@@ -43,16 +44,39 @@ void modo_cb(const std_msgs::Byte::ConstPtr& msg){
 }
 
 void isr(void){
-  modo = 5;
-  geometry_msgs::Twist twist;
-  twist.angular.z = 0.0;
-  twist.linear.x = 0.0;
-  vel_pub.publish(twist);
-  ros::spinOnce();
-  ROS_INFO("Pausa de 1 segundo por fin de carrera activado");
-  ros::Duration(1.0).sleep();
-  ROS_INFO("Fin pausa por fin de carrera activado");
-  modo = 0;
+  if(cont <= 5){
+    modo = 5;
+    geometry_msgs::Twist twist;
+    twist.angular.z = 0.0;
+    twist.linear.x = 0.0;
+    vel_pub.publish(twist);
+    ros::spinOnce();
+    //std::cout<<"Cont:"<<cont<<"\n";
+    ROS_INFO("Pausa por fin de carrera activado");
+    ros::Duration(1.0).sleep();
+    ROS_INFO("Fin pausa por fin de carrera activado");
+    modo = 0;
+  }
+  else{
+    //std::cout<<"Cont:"<<cont<<"\n";
+    std::cout<<"... Desatascando ..."<<"\n";
+    geometry_msgs::Twist twist;
+    if(!FC[2] || !FC[3] || !FC[4]){
+      twist.angular.z = -0.25;
+      twist.linear.x = -0.5;
+    }
+    else if(!FC[5] || !FC[6] || !FC[7]){
+      twist.angular.z = 0.25;
+      twist.linear.x = -0.5;
+    }
+    else{
+      twist.angular.z = 0.0;
+      twist.linear.x = 0.5;
+    }
+    vel_pub.publish(twist);
+    ros::spinOnce();
+    ros::Duration(1.0).sleep();
+  }
 }
 
 int main(int argc, char** argv)
@@ -108,15 +132,18 @@ int main(int argc, char** argv)
     //std::cout<<"FC:"<<FC[0]<<FC[1]<<FC[2]<<FC[3]<<FC[4]<<FC[5]<<FC[6]<<FC[7]<<FC[8]<<FC[9]<<"\n";
     
     if(!FC[0]||!FC[1]||!FC[2]||!FC[3]||!FC[4]||!FC[5]||!FC[6]||!FC[7]||!FC[8]||!FC[9]){
+      cont++;
       isr();
     }
     else if(modo==0){
+      cont = 0;
       cmd_vel_msg.angular.z = angular_control;
       cmd_vel_msg.linear.x = linear_control;
       vel_pub.publish(cmd_vel_msg);
       ros::spinOnce();  
     }
     else{
+      cont = 0;
       cmd_vel_msg.angular.z = angular_sensores;
       cmd_vel_msg.linear.x = linear_sensores;
       vel_pub.publish(cmd_vel_msg);

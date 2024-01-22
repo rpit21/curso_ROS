@@ -220,3 +220,11 @@ target_link_libraries(sensors_node ${catkin_LIBRARIES} -lwiringPi
 add_executable(test_fc src/test_fc.cpp)
 target_link_libraries(test_fc ${catkin_LIBRARIES} -lwiringPi
 )
+
+#obtencion de datos
+add_executable(datos src/datos.cpp)
+target_link_libraries(datos ${catkin_LIBRARIES})
+
+#prueba de autonomia
+add_executable(auto src/auto.cpp)
+target_link_libraries(auto ${catkin_LIBRARIES})

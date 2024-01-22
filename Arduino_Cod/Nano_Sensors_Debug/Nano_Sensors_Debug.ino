@@ -18,9 +18,9 @@
 #define Rc5       6
 #define Rc6       7
 
-#define B_low     0
-#define B_high    1023
-#define U_lim     35//30
+#define B_low     350//790-800
+#define B_high    385//910-920
+#define U_lim     30//30
 #define S_lim     100
 #define R1_lim    450//320-340||510-520
 #define R2_lim    290//200-240||320-330
@@ -139,7 +139,7 @@ void loop() {
       modo = 0;
     }
   }
-  bat = map(analogRead(Battery),B_low,B_high,0,100);
+  bat = 5*map(analogRead(Battery),B_low,B_high,0,20);
   if(bat > 100){bat=100;}
   if(bat < 0){bat=0;}
   bat_msg = bat;
@@ -234,9 +234,10 @@ void loop() {
   Serial.print(" Linear:");
   Serial.print(linear);
   Serial.print(" Angular:");
-  Serial.println(angular);
+  Serial.print(angular);
   
-  Serial.print("Battery: ");
+  Serial.print(" Battery: ");
+  //Serial.println(analogRead(Battery));
   Serial.println(bat_msg);
   modo = 0;
   linear = 0.0;
@@ -244,7 +245,7 @@ void loop() {
   bat = 0;
   
   //delay para evitar saturacion de mensajes
-  delay(10);
+  delay(100);
   }
 
 

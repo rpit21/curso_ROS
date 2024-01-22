@@ -1,6 +1,5 @@
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
-#include <std_msgs/Int16.h>
 #include <geometry_msgs/Twist.h>
 #include "dynamixel_sdk/dynamixel_sdk.h"
 
@@ -24,7 +23,7 @@ using namespace dynamixel;
 #define DXL_IDL				        2 
 #define DXL_IDR				        1
 #define BAUDRATE              57600           // Default Baudrate of DYNAMIXEL X series
-#define DEVICE_NAME           "/dev/ttyUSB2"  // [Linux] To find assigned port, use "$ ls /dev/ttyUSB*" command
+#define DEVICE_NAME           "/dev/ttyUSB1"  // [Linux] To find assigned port, use "$ ls /dev/ttyUSB*" command
 
 PortHandler * portHandler;
 PacketHandler * packetHandler;
@@ -124,7 +123,7 @@ int main(int argc, char ** argv)
   ros::Publisher vel_R_pub =nh.advertise<std_msgs::Int32>("/vel_R", 10);
   ros::Publisher current_L_pub =nh.advertise<std_msgs::Int32>("/current_L", 10);
   ros::Publisher current_R_pub =nh.advertise<std_msgs::Int32>("/current_R", 10);
-  ros::Rate loop_rate(1);
+  ros::Rate loop_rate(10);
   
   while (ros::ok()){
     uint8_t dxl_error = 0;
@@ -137,34 +136,39 @@ int main(int argc, char ** argv)
     
     dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, DXL_IDL, ADDR_PRESENT_VELOCITY, (uint32_t *)&vel_l, &dxl_error);
     vel_L.data = 0.229*vel_l;		
-    ROS_INFO("getVelocity : DXL_L -> Velocity:%d", vel_L.data);
     vel_L_pub.publish(vel_L);
-    ros::spinOnce();
 	
     dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, DXL_IDR, ADDR_PRESENT_VELOCITY, (uint32_t *)&vel_r, &dxl_error);
     vel_R.data = -0.229*vel_r;		
-    ROS_INFO("getVelocity : DXL_R -> Velocity:%d", vel_R.data);
     vel_R_pub.publish(vel_R);
-    ros::spinOnce();
     
-    std_msgs::Int16 current_L;
-    std_msgs::Int16 current_R;
+    std_msgs::Int32 current_L;
+    std_msgs::Int32 current_R;
 	  int16_t current_l = 0;
     int16_t current_r = 0;
     
     dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, DXL_IDL, ADDR_PRESENT_CURRENT, (uint16_t *)&current_l, &dxl_error);
     current_L.data = 2.69*current_l;		
-    ROS_INFO("getCurrnt : DXL_L -> Current:%d", current_L.data);
     current_L_pub.publish(current_L);
-    ros::spinOnce();
 	
     dxl_comm_result = packetHandler->read2ByteTxRx(portHandler, DXL_IDR, ADDR_PRESENT_CURRENT, (uint16_t *)&current_r, &dxl_error);
     current_R.data = -2.69*current_r;		
-    ROS_INFO("getCurrent : DXL_R -> Current:%d", current_R.data);
     current_R_pub.publish(current_R);
+    
+    //std::cout<<"Speed-> DXL_L: "<<vel_L.data<<" DXL_R: "<<vel_R.data<<" Current-> DXL_L: "<<current_L.data<<" DXL_R: "<<current_R.data<<"\n";
+    
     ros::spinOnce();
-      
     loop_rate.sleep();
+  }
+  uint8_t dxl_error = 0;
+  int dxl_comm_result = COMM_TX_FAIL;
+  dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, DXL_IDL, ADDR_GOAL_VELOCITY, 0, &dxl_error);
+  if (dxl_comm_result != COMM_SUCCESS) {
+    ROS_ERROR("Failed to set velocity! for DXL_L Result: %d", dxl_comm_result);
+  }
+  dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, DXL_IDR, ADDR_GOAL_VELOCITY, 0, &dxl_error);
+  if (dxl_comm_result != COMM_SUCCESS) {
+    ROS_ERROR("Failed to set velocity! for DXL_R Result: %d", dxl_comm_result);
   }
   portHandler->closePort();
   return 0;

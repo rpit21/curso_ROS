@@ -17,12 +17,12 @@ def callback_laser(msg):
   take_action(regions)
   
 def take_action(regions):
-  threshold_dist = 0.9
-  linear_speed = 0.15
+  threshold_dist = 0.6
+  linear_speed = 0.5
   angular_speed = 0.6
 
   msg = Twist()
-  linear_x = 0
+  linear_x = 0.5
   angular_z = 0
   
   state_description = ''
@@ -73,7 +73,7 @@ def main():
   
   rospy.init_node('reading_laser')
   
-  pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+  pub = rospy.Publisher('/cmd_vel_control', Twist, queue_size=1)
   
   sub = rospy.Subscriber('/scan', LaserScan, callback_laser)
   

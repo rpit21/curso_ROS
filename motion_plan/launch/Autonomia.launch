@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
  <launch>
-     
-     
      <!-- Nodo conexion U2D2-->
     <node pkg="motion_plan" type="U2D2" name="U2D2" output="screen">
     </node>
@@ -11,20 +9,17 @@
     <param name="port" value="/dev/ttyUSB0"/>
     </node>
     
+    <!-- Nodo de toma de desicion de sensores-->
+    <node pkg="motion_plan" type="sensors_node" name="sensors_node" output="screen"/>
+    
     <!-- Launcher Lidar -->
     <include file="$(find ldlidar_stl_ros)/launch/ld19.launch" />
     <node name="rviz_show_ldlidar" pkg="rviz" type="rviz" args="-d $(find ldlidar_stl_ros)/rviz/ldlidar_noetic.rviz" required="true"/>
     
-    <!-- Nodo de evasion obstaculos 360-->
-    <!--node pkg="motion_plan" type="laser_obstacle_avoid_360_node_class.py" name="evasion" output="screen"/-->
-    
-    <!-- Nodo de evasion obstaculos 360-->
-    <node pkg="motion_plan" type="obstacle_avoidance.py" name="evasion" output="screen"/>
-    
-    <!-- Nodo de toma de desicion de sensores-->
-    <node pkg="motion_plan" type="sensors_node" name="sensors_node" output="screen"/>
-    
     <!-- Nodo de salida de datos-->
     <node pkg="motion_plan" type="datos" name="Datos" output="screen"/>
+    
+    <!-- Nodo de prueba de autonomia-->
+    <node pkg="motion_plan" type="auto" name="Autonomia" output="screen"/>
    
   </launch>
